@@ -1,0 +1,104 @@
+﻿<Window x:Class="MusicPlayer_ovh.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer_ovh"
+        xmlns:fa="http://schemas.fontawesome.com/icons/" xmlns:fa1="http://schemas.fontawesome.io/icons/"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Title="MainWindow" Height="800" Width="1300" Background="{x:Null}">
+
+    <!-- window resources -->
+
+    <Window.Resources>
+
+        <local:IndexConverter x:Key="IndexConverter"/>
+
+    </Window.Resources>
+
+    <!-- grid definitions-->
+    <Border CornerRadius="8"
+            BorderBrush="#333333" 
+            BorderThickness="1"
+            ClipToBounds="True">
+        <Grid Background="#FF171717" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="550"/>
+                <RowDefinition Height="150"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="800"/>
+                <ColumnDefinition Width="250"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- navbar -->
+
+            <Grid Grid.ColumnSpan="3" Grid.Row="0" Background="#33000000" ClipToBounds="False" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Music Player OVH" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#E0E0E0" Height="20" HorizontalAlignment="Left" Width="205" TextAlignment="Center"/>
+                <Button Grid.Column="1" Style="{StaticResource MinimizeButtonStyle}" Click="MinimizeButton">
+                    <fa1:ImageAwesome Icon="WindowMinimize" Width="16" Height="16" Foreground="Black"/>
+                </Button>
+                <Button Grid.Column="2" Style="{StaticResource CloseButtonStyle}" Click="CloseButton">
+                    <fa1:ImageAwesome Icon="Close" Width="16" Height="16" Foreground="Black"/>
+                </Button>
+            </Grid>
+
+            <!-- notifications -->
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Height="100" Width="250" Grid.Row="1">
+                <UIElement.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </UIElement.RenderTransform>
+                <ItemsControl ItemsSource="{Binding ActiveNotifications}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#333" CornerRadius="10" Margin="5" Padding="10">
+                                <TextBlock Text="{Binding}" Foreground="White" FontWeight="Bold"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+            <!-- UI-->
+            <Button x:Name="btPath" Grid.Column="1" Grid.Row="1" Style="{StaticResource pathButtonStyle}" Content="Change folder" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720"/>
+            <Button Grid.Column="1" Grid.Row="1" Width="80" Style="{StaticResource pathButtonStyleOpenExplorer}" Margin="720,30,0,30">
+                <fa1:ImageAwesome Icon="FolderOpen" Width="20" Height="20" Foreground="Black"/>
+            </Button>
+
+            <ListView x:Name="Grid_MusicList" AlternationCount="10000" Style="{StaticResource MusicPlayerListStyle}" ItemContainerStyle="{StaticResource MusicPlayerListItemStyle}" Grid.Column="1" Grid.Row="2" Margin="33,22,33,22" ItemsSource="{Binding songs}">
+                <ListView.View>
+                    <GridView ColumnHeaderContainerStyle="{StaticResource MusicListHeader}">
+                        <GridViewColumn Header="" Width="40" >
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem},
+                                    Path=(ItemsControl.AlternationIndex), Converter={StaticResource IndexConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Name" Width="280" DisplayMemberBinding="{Binding name}"/>
+                        <GridViewColumn Header="Artist" Width="280" DisplayMemberBinding="{Binding author}"/>
+                        <GridViewColumn Header="Length" Width="60" DisplayMemberBinding="{Binding length}"/>
+                    </GridView>
+                </ListView.View>
+
+            </ListView>
+        </Grid>
+    </Border>
+</Window>
