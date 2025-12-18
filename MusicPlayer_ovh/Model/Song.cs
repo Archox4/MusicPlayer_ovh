@@ -13,7 +13,7 @@ namespace MusicPlayer_ovh.Model
         public string name { get; set; }
         public string author { get; set; }
         public string length { get; set; }
-        public TagLib.IPicture? image { get; set; }
+        public TagLib.IPicture image { get; set; }
 
         public Song(string path, string name, string author, string length, TagLib.IPicture image)
         {

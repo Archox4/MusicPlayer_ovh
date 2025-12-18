@@ -17,30 +17,27 @@
     <Window.Resources>
 
         <local:IndexConverter x:Key="IndexConverter"/>
-
+        <Style x:Key="MusicListViewItemEvent" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource MusicPlayerListItemStyle}">
+            <EventSetter Event="MouseDoubleClick" Handler="HandleDoubleClick" />
+        </Style>
     </Window.Resources>
 
     <!-- grid definitions-->
     <Border CornerRadius="8"
             BorderBrush="#333333" 
             BorderThickness="1"
+            Padding="3"
             ClipToBounds="True">
-        <Grid Background="#FF171717" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height="40"/>
-                <RowDefinition Height="100"/>
-                <RowDefinition Height="550"/>
-                <RowDefinition Height="150"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="800"/>
-                <ColumnDefinition Width="250"/>
-            </Grid.ColumnDefinitions>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="3" Color="#FF0A0A0A"/>
+        </Border.Effect>
+
+        <StackPanel>
 
             <!-- navbar -->
 
-            <Grid Grid.ColumnSpan="3" Grid.Row="0" Background="#33000000" ClipToBounds="False" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid Height="28" Background="#33000000" ClipToBounds="False" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="40"/>
@@ -54,51 +51,144 @@
                     <fa1:ImageAwesome Icon="Close" Width="16" Height="16" Foreground="Black"/>
                 </Button>
             </Grid>
+            <!-- main grid / body -->
+            <Grid Background="#FF171717" Height="769" ClipToBounds="True">
+                <Grid.RowDefinitions>
 
-            <!-- notifications -->
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Height="100" Width="250" Grid.Row="1">
-                <UIElement.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform/>
-                        <SkewTransform/>
-                        <RotateTransform/>
-                        <TranslateTransform/>
-                    </TransformGroup>
-                </UIElement.RenderTransform>
-                <ItemsControl ItemsSource="{Binding ActiveNotifications}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Background="#333" CornerRadius="10" Margin="5" Padding="10">
-                                <TextBlock Text="{Binding}" Foreground="White" FontWeight="Bold"/>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-            <!-- UI-->
-            <Button x:Name="btPath" Grid.Column="1" Grid.Row="1" Style="{StaticResource pathButtonStyle}" Content="Change folder" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720"/>
-            <Button Grid.Column="1" Grid.Row="1" Width="80" Style="{StaticResource pathButtonStyleOpenExplorer}" Margin="720,30,0,30">
-                <fa1:ImageAwesome Icon="FolderOpen" Width="20" Height="20" Foreground="Black"/>
-            </Button>
+                    <RowDefinition Height="75"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="115"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="245"/>
+                    <ColumnDefinition Width="*"/>
 
-            <ListView x:Name="Grid_MusicList" AlternationCount="10000" Style="{StaticResource MusicPlayerListStyle}" ItemContainerStyle="{StaticResource MusicPlayerListItemStyle}" Grid.Column="1" Grid.Row="2" Margin="33,22,33,22" ItemsSource="{Binding songs}">
-                <ListView.View>
-                    <GridView ColumnHeaderContainerStyle="{StaticResource MusicListHeader}">
-                        <GridViewColumn Header="" Width="40" >
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock HorizontalAlignment="Center" Text="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem},
-                                    Path=(ItemsControl.AlternationIndex), Converter={StaticResource IndexConverter}}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="Name" Width="280" DisplayMemberBinding="{Binding name}"/>
-                        <GridViewColumn Header="Artist" Width="280" DisplayMemberBinding="{Binding author}"/>
-                        <GridViewColumn Header="Length" Width="60" DisplayMemberBinding="{Binding length}"/>
-                    </GridView>
-                </ListView.View>
+                    <ColumnDefinition Width="245"/>
+                </Grid.ColumnDefinitions>
 
-            </ListView>
-        </Grid>
+
+
+                <!-- UI-->
+                <!-- notifications -->
+                <StackPanel Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Height="118" Width="226" Margin="0,10,0,0" Grid.RowSpan="2">
+                    <StackPanel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </StackPanel.RenderTransform>
+                    <ItemsControl ItemsSource="{Binding ActiveNotifications}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#333" CornerRadius="10" Margin="5" Padding="10">
+                                    <TextBlock Text="{Binding}" Foreground="White" FontWeight="Bold"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <!-- grid - 0/1 -->
+                <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button x:Name="btPath" Grid.Column="1" Grid.Row="0" Style="{StaticResource PathButtonStyle}" Content="Change folder" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720"/>
+                    <Button Grid.Column="1" Grid.Row="0" Width="80" Style="{StaticResource PathButtonStyleOpenExplorer}" Height="40"  >
+                        <fa1:ImageAwesome Icon="FolderOpen" Width="20" Height="20" Foreground="Black"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- grid - 1/1 -->
+                <ListView x:Name="Grid_MusicList" AlternationCount="10000" Style="{StaticResource MusicPlayerListStyle}" ItemContainerStyle="{StaticResource MusicListViewItemEvent}" Grid.Column="1" Grid.Row="1" Margin="33,22,33,22" ItemsSource="{Binding songs}" >
+                    <ListView.View>
+                        <GridView ColumnHeaderContainerStyle="{StaticResource MusicListHeader}">
+                            <GridViewColumn Header="" Width="40" >
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock HorizontalAlignment="Center" Text="{Binding (ItemsControl.AlternationIndex), Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Name" Width="290" DisplayMemberBinding="{Binding name}"/>
+                            <GridViewColumn Header="Artist" Width="270" DisplayMemberBinding="{Binding author}"/>
+                            <GridViewColumn Width="40" DisplayMemberBinding="{Binding length}">
+                                <GridViewColumn.Header>
+                                    <fa1:ImageAwesome Icon="ClockOutline" Height="12" Foreground="#E0E0E0"/>
+                                </GridViewColumn.Header>
+                            </GridViewColumn>
+                            <GridViewColumn Header="" Width="96">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource MinimizeButtonStyle}" Height="30" Click="AddToQueue">
+                                            <fa1:ImageAwesome Icon="Plus" Height="12" Foreground="#FF101010"/>
+                                        </Button>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <!-- grid - 2/1 -->
+                <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+                    <Image x:Name="song_img" Grid.Column="0" Width="72" Height="72" HorizontalAlignment="Left" Margin="8">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="2" ShadowDepth="2"/>
+                        </Image.Effect>
+                    </Image>
+                    <Label x:Name="song_title" Foreground="#E0E0E0" Grid.Column="0" Margin="96,38,10,37" FontSize="18"/>
+
+                    <Button x:Name="bt_play" Grid.Column="1" Command="{Binding TooglePlayCommand}" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Click="Song_PlayPause">
+                        <fa1:ImageAwesome x:Name="PlayButtonIcon" Icon="{Binding PlayPauseIcon}" Height="20" Foreground="#FF101010"/>
+                    </Button>
+                    <Button Grid.Column="1" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Margin="130,34,20,34" Click="Song_Next">
+                        <fa1:ImageAwesome Icon="AngleRight" Height="20" Foreground="#FF101010"/>
+                    </Button>
+                    <Button Grid.Column="1" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Margin="20,34,130,34" Click="Song_Previous">
+                        <fa1:ImageAwesome Icon="AngleLeft" Height="20" Foreground="#FF101010"/>
+                    </Button>
+
+                    <Button x:Name="bt_mode" Grid.Column="2" Command="{Binding ToogleModeCommand}" Style="{StaticResource ControlsButtonStyle}" Height="30" Width="30" Margin="34,38,230,43" Click="Song_Mode">
+                        <fa1:ImageAwesome x:Name="ModeIcon" Icon="{Binding ModeIcon}" Height="15" Foreground="#FF101010"/>
+                    </Button>
+                </Grid>
+
+                <!-- grid - 2 /  2-->
+                <TabControl x:Name="sidePanel" Style="{StaticResource SidePanelStyle}" Grid.Column="2"  Margin="0,14,10,57" Grid.Row="1">
+                    <TabItem Header="TabItem">
+                        <Grid>
+                            <ListView x:Name="QueueListView" ItemsSource="{Binding queue}" Margin="8" ItemContainerStyle="{StaticResource MusicPlayerListItemStyle}" Style="{StaticResource MusicPlayerListStyle}" >
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Queue" Width="200" DisplayMemberBinding="{Binding name}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="TabItem">
+                        <Grid>
+                            <ListView x:Name="HistoryListView" ItemsSource="{Binding history}" Margin="8" ItemContainerStyle="{StaticResource MusicPlayerListItemStyle}" Style="{StaticResource MusicPlayerListStyle}" >
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="History" Width="200" DisplayMemberBinding="{Binding name}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+                <Button Grid.Column="2" Style="{StaticResource ControlsButtonStyle}" Width="24" Height="25" HorizontalAlignment="Left" Margin="93,532,0,0" Grid.Row="1" VerticalAlignment="Top" Click="sidePanel_changeToQueue">
+                    <fa1:ImageAwesome Icon="ListUl" Width="12" Height="12" Foreground="Black"/>
+                </Button>
+                <Button Grid.Column="2" Style="{StaticResource ControlsButtonStyle}" Width="24" Height="25" HorizontalAlignment="Left" Margin="123,532,0,0" Grid.Row="1" VerticalAlignment="Top" Click="sidePanel_changeToHistory">
+                    <fa1:ImageAwesome Icon="History" Width="12" Height="12" Foreground="Black"/>
+                </Button>
+
+            </Grid>
+        </StackPanel>
     </Border>
 </Window>

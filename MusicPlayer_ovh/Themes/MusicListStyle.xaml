@@ -15,7 +15,7 @@
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
                     BorderThickness="{TemplateBinding BorderThickness}"
-                    Padding="{TemplateBinding Padding}"
+                    Padding="5,2"
                     CornerRadius="8">
 
                         <GridViewRowPresenter Content="{TemplateBinding Content}" Columns="{TemplateBinding GridView.ColumnCollection}"/>
@@ -25,12 +25,12 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#2A2A2A"/>
                         </Trigger>
-
+                        <!--
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#2A2A2A"/>
                             <Setter Property="Foreground" Value="White"/>
                         </Trigger>
-
+-->
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -96,7 +96,7 @@
     </Style>
 
     <Style x:Key="NoScrollBarStyle" TargetType="{x:Type ScrollViewer}">
-        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Focusable" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollViewer}">
@@ -104,7 +104,7 @@
                         <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" 
                                             CanContentScroll="{TemplateBinding CanContentScroll}" 
                                             CanHorizontallyScroll="False" 
-                                            CanVerticallyScroll="False"/>
+                                            CanVerticallyScroll="True"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

@@ -1,4 +1,5 @@
-﻿using MusicPlayer_ovh.Model;
+﻿using FontAwesome.WPF;
+using MusicPlayer_ovh.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,17 +18,35 @@ namespace MusicPlayer_ovh
     {
         public ObservableCollection<string> ActiveNotifications { get; set; } = new ObservableCollection<string>();
         private ObservableCollection<Song> _songs = new ObservableCollection<Song>();
+        private ObservableCollection<Song> _queue = new ObservableCollection<Song>();
+        private ObservableCollection<Song> _history = new ObservableCollection<Song>();
 
         public ObservableCollection<Song> songs
         {
-
             get => _songs;
             set
             {
                 _songs = value;
                 OnPropertyChanged();
             }
-
+        }
+        public ObservableCollection<Song> queue
+        {
+            get => _queue;
+            set
+            {
+                _queue = value;
+                OnPropertyChanged();
+            }
+        }
+        public ObservableCollection<Song> history
+        {
+            get => _history;
+            set
+            {
+                _history = value;
+                OnPropertyChanged();
+            }
         }
 
         public AppContext(string path)
@@ -42,6 +61,22 @@ namespace MusicPlayer_ovh
 
         }
 
+        public void UpdateQueue(List<Song> queue)
+        {
+            _queue.Clear();
+            foreach (var song in queue)
+            {
+                _queue.Add(song);
+            }
+        }
+        public void UpdateHistory(List<Song> history)
+        {
+            _history.Clear();
+            foreach (var song in history)
+            {
+                _history.Add(song);
+            }
+        }
         private void HandleNotification(string message)
         {
             App.Current.Dispatcher.Invoke(async () =>
@@ -78,6 +113,9 @@ namespace MusicPlayer_ovh
 
             }
         }
-    
+
+
+
+
     }
 }
