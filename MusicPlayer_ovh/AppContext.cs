@@ -59,6 +59,7 @@ namespace MusicPlayer_ovh
             }
             LoadSongs(path);
 
+
         }
 
         public void UpdateQueue(List<Song> queue)
@@ -93,18 +94,21 @@ namespace MusicPlayer_ovh
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        private async void LoadSongs(string path)
+        public async void LoadSongs(string path)
         {
             try
             {
-                var list = await MusicController.musicController.LoadMusicFilesAsync(path);
-                if (list == null)
-                {
-                    songs = new ObservableCollection<Song>();
-                    return;
-                }
-                songs = new ObservableCollection<Song>(list ?? new List<Song>());
-                AppNotificationService.SendNotification($"Loaded {songs.Count} songs");
+
+                
+                    var list = await MusicController.musicController.LoadMusicFilesAsync(path);
+                    if (list == null)
+                    {
+                        songs = new ObservableCollection<Song>();
+                        return;
+                    }
+                    songs = new ObservableCollection<Song>(list ?? new List<Song>());
+                    AppNotificationService.SendNotification($"Loaded {songs.Count} songs");
+                
             }
             catch (Exception ex)
             {

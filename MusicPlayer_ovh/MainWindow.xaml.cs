@@ -1,12 +1,16 @@
 ﻿using FontAwesome.WPF;
 using MusicPlayer_ovh.Model;
+using NAudio.Wave;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -14,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 
 
@@ -39,12 +44,21 @@ namespace MusicPlayer_ovh
 
     public partial class MainWindow : Window
     {
+        public static RoutedCommand PlayCommand = new RoutedCommand();
+        public static RoutedCommand NextCommand = new RoutedCommand();
+        public static RoutedCommand PreviousCommand = new RoutedCommand();
+        public static RoutedCommand VolumeUpCommand = new RoutedCommand();
+        public static RoutedCommand VolumeDownCommand = new RoutedCommand();
+
 
         private ObservableCollection<Song> songs = new ObservableCollection<Song>();
         private ObservableCollection<Song> queue = new ObservableCollection<Song>();
         private ObservableCollection<Song> history = new ObservableCollection<Song>();
 
-        private AudioPlayer Player = new AudioPlayer();
+        private DispatcherTimer timer;
+        private bool isDragging = false;
+
+        public AudioPlayer Player = new AudioPlayer();
         private string _STATE;
         private Song? playingSong;
         private List<Song>? songHistory;
@@ -54,18 +68,24 @@ namespace MusicPlayer_ovh
         int randomPos = -1;
         int historyPos = 0;
         int lastPos = -1;
+        float volume = 0.5f;
+        string path;
 
+        private Mixer? mixerWindow;
 
         public MainWindow()
         {
             InitializeComponent();
 
             //this.DataContext = new MusicListContext("C:\\Users\\w\\Music");
-            this.DataContext = new AppContext("C:\\Users\\w\\Music");
+            loadPath();
+
+            this.DataContext = new AppContext(path);
             songs = ((AppContext)this.DataContext).songs;
             queue = ((AppContext)this.DataContext).queue;
             history = ((AppContext)this.DataContext).history;
-            
+
+
 
             _STATE = "paused";
             _PLAYMODE = Modes.Normal;
@@ -76,7 +96,38 @@ namespace MusicPlayer_ovh
             songHistory = new ();
             songQueue = new ();
             songListRandom = new ();
+            volume = Properties.Settings.Default.Volume;
 
+            setCommandBindings();
+
+            UpdateUI();
+
+        }
+
+        private void setCommandBindings()
+        {
+            CommandBindings.Add(new CommandBinding(PlayCommand, Song_PlayPause));
+            InputBindings.Add(new KeyBinding(PlayCommand, Key.Space, ModifierKeys.None));
+            InputBindings.Add(new KeyBinding(PlayCommand, Key.MediaPlayPause, ModifierKeys.None));
+
+            CommandBindings.Add(new CommandBinding(NextCommand, Song_Next));
+            InputBindings.Add(new KeyBinding(NextCommand, Key.MediaNextTrack, ModifierKeys.None));
+
+            CommandBindings.Add(new CommandBinding(PreviousCommand, Song_Previous));
+            InputBindings.Add(new KeyBinding(PreviousCommand, Key.MediaPreviousTrack, ModifierKeys.None));
+
+            CommandBindings.Add(new CommandBinding(VolumeUpCommand, (s, e) =>
+            {
+                setVolume(Math.Min(1.0f, volume + 0.05f));
+                UpdateUI();
+            }));
+            InputBindings.Add(new KeyBinding(VolumeUpCommand, Key.VolumeUp, ModifierKeys.None));
+            CommandBindings.Add(new CommandBinding(VolumeDownCommand, (s, e) =>
+            {
+                setVolume(Math.Max(0.0f, volume - 0.05f));
+                UpdateUI();
+            }));
+            InputBindings.Add(new KeyBinding(VolumeDownCommand, Key.VolumeDown, ModifierKeys.None));
         }
 
         protected void HandleDoubleClick(object sender, MouseButtonEventArgs e)
@@ -85,6 +136,8 @@ namespace MusicPlayer_ovh
             if (song != null)
             {
                 Player.Play(song.path);
+                Player.Volume(volume);
+
                 AddHistory(song);
 
                 _STATE = "playing";
@@ -95,8 +148,8 @@ namespace MusicPlayer_ovh
                 //playingSong = song;
 
                 //lastPos = getSongPosition(song.path);
+                setTimer();
 
-                
                 UpdateUI();
             }
         }
@@ -128,22 +181,20 @@ namespace MusicPlayer_ovh
             {
                 Player.Pause();
                 _STATE = "paused";
+                timer.Stop();
             }
             else if (_STATE == "paused" && playingSong != null)
             {
                 Player.Resume();
                 _STATE = "playing";
+                timer.Start();
             }
             else if (_STATE == "paused" && playingSong == null && _songs.Count > 0)
             {
-                //Player.Play(_songs[0].path);
-                //playingSong = _songs[0];
-                //AddHistory(playingSong);
                 playNextSong();
                 _STATE = "playing";
             }
             TogglePlay();
-            
         }
 
         private void playNextSong()
@@ -228,6 +279,10 @@ namespace MusicPlayer_ovh
                     }
                 }
             }
+            Player.Volume(volume);
+            _STATE = "playing";
+            setTimer();
+            TogglePlay();
             UpdateUI();
         }
         private int getSongPosition(string path)
@@ -247,7 +302,6 @@ namespace MusicPlayer_ovh
         {
             if(songHistory != null && playingSong != null)
             {
-                AppNotificationService.SendNotification("Playing: " + playingSong.name + " - " + playingSong.author);
 
                 if(songHistory.Count == 0)
                 {
@@ -292,7 +346,7 @@ namespace MusicPlayer_ovh
         
         public void TogglePlay()
         {
-            if (PlayButtonIcon.Icon == FontAwesomeIcon.Play)
+            if (_STATE == "playing")
             {
                 PlayButtonIcon.Icon = FontAwesomeIcon.Pause;
             }
@@ -317,6 +371,11 @@ namespace MusicPlayer_ovh
             if(playingSong != null)
             {
                 song_title.Content = playingSong?.name;
+
+                lb_total_time.Content = Player.TotalSecondsStr;
+                song_bar.Maximum = Player.TotalSeconds;
+
+
                 MemoryStream ms = new MemoryStream(playingSong.image.Data.Data);
                 ms.Seek(0, SeekOrigin.Begin);
                 BitmapImage bitmap = new BitmapImage();
@@ -325,8 +384,12 @@ namespace MusicPlayer_ovh
                 bitmap.EndInit();
 
                 song_img.Source = bitmap;
+
             }
-            
+
+            volume_slider.Value = volume;
+
+
         }
 
         // Fisher-Yates shuffle algorithm / takes list and randomizes
@@ -363,6 +426,94 @@ namespace MusicPlayer_ovh
             ToggleMode();
         }
 
+        // slider volume movement
+        private void SliderMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Slider slider)
+            {
+                e.Handled = true;
+
+                slider.CaptureMouse();
+
+                UpdateValueToMouse(slider, e.GetPosition(slider));
+            }
+        }
+        private void SliderMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Slider slider && slider.IsMouseCaptured)
+            {
+                e.Handled = true;
+                slider.ReleaseMouseCapture();
+            }
+        }
+        private void Slider_LostMouseCapture(object sender, MouseEventArgs e)
+        {
+
+            //AppNotificationService.SendNotification("Capture Lost - Stopping Drag");
+
+        }
+        private void SliderMouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is Slider slider && slider.IsMouseCaptured)
+            {
+                e.Handled = true;
+                UpdateValueToMouse(slider, e.GetPosition(slider));
+            }
+        }
+        private void UpdateValueToMouse(Slider slider, Point mousePos)
+        {
+            double ratio = mousePos.X / slider.ActualWidth;
+
+            ratio = Math.Max(0, Math.Min(1, ratio));
+
+            slider.Value = ratio * (slider.Maximum - slider.Minimum) + slider.Minimum;
+
+            setVolume((float)slider.Value);
+            //Player.Volume((float)slider.Value);
+            //volume = (float)slider.Value;
+        }
+        // songbar movement
+        private void SongBarMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Slider slider)
+            {
+                e.Handled = true;
+
+                slider.CaptureMouse();
+
+                UpdateValueToMouseSongBar(slider, e.GetPosition(slider));
+                
+            }
+        }
+        private void SongBarMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Slider slider && slider.IsMouseCaptured)
+            {
+                e.Handled = true;
+                
+                slider.ReleaseMouseCapture();
+
+            }
+        }
+        private void SongBarMouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is Slider slider && slider.IsMouseCaptured)
+            {
+                e.Handled = true;
+                UpdateValueToMouseSongBar(slider, e.GetPosition(slider));
+            }
+        }
+        private void UpdateValueToMouseSongBar(Slider slider, Point mousePos)
+        {
+            double ratio = mousePos.X / slider.ActualWidth;
+
+            ratio = Math.Max(0, Math.Min(1, ratio));
+
+            slider.Value = ratio * (slider.Maximum - slider.Minimum) + slider.Minimum;
+
+            Player.Seek(slider.Value);
+        }
+
         private void AddToQueue(object sender, RoutedEventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
@@ -390,8 +541,96 @@ namespace MusicPlayer_ovh
         {
             sidePanel.SelectedIndex = 1;
         }
-    }
 
+        private void Button_OpenEqualizer(object sender, RoutedEventArgs e)
+        {
+            if (mixerWindow == null)
+            {
+                mixerWindow = new Mixer(this.Player);
+                mixerWindow.Owner = this;
+            }
+
+            mixerWindow.Show();
+            mixerWindow.Activate();
+        }
+
+        
+        private void setVolume(float vol)
+        {
+            Player.Volume(vol);
+            volume = vol;
+            
+        }
+        // song progress bar
+        public void setTimer()
+        {
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(100);
+            timer.Tick += (s,e)=>
+            {
+                if (!isDragging)
+                {
+                    song_bar.Value = Player.CurrentSeconds;
+                    lb_current_time.Content = Player.CurrentSecondsStr;
+                }
+                if (Player.TotalSeconds > 0 &&
+                    (Player.TotalSeconds - Player.CurrentSeconds) < 0.5)
+                {
+                    AppNotificationService.SendNotification("Song ended");
+
+                    timer.Stop();
+                    playNextSong();
+                }
+            };
+            timer.Start();
+        }
+
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Properties.Settings.Default.Volume = volume;
+
+            Properties.Settings.Default.Path = path;
+
+            Properties.Settings.Default.Save();
+
+            base.OnClosing(e);
+        }
+
+        private async Task Path()
+        {
+            
+            if (Directory.Exists(Clipboard.GetText()))
+            {
+                ((AppContext)this.DataContext).LoadSongs(Clipboard.GetText());
+                path = Clipboard.GetText();
+
+                songs = ((AppContext)this.DataContext).songs;
+                queue = ((AppContext)this.DataContext).queue;
+                history = ((AppContext)this.DataContext).history;
+            }
+            await Task.CompletedTask;
+        }
+
+        private void PathButtonClick(object sender, RoutedEventArgs e)
+        {;
+                using var _ = Path();
+        }
+
+        private void loadPath()
+        {
+            if(Properties.Settings.Default.Path != null && Directory.Exists(Properties.Settings.Default.Path))
+            {
+                path = Properties.Settings.Default.Path;
+
+            }
+            else
+            {
+                path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+            }
+        }
+
+    }
 
     public enum Modes
     {

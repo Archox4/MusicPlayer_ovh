@@ -13,6 +13,7 @@
                 <ResourceDictionary Source="/Themes/MusicListStyle.xaml"/>
                 <ResourceDictionary Source="/Themes/UI_util.xaml"/>
                 <ResourceDictionary Source="/Themes/Nav_util.xaml"/>
+                <ResourceDictionary Source="/Themes/Mixer_util.xaml"/>
                 <ResourceDictionary Source="/Themes/Controls_util.xaml"/>
                 <ResourceDictionary Source="/Themes/SidePanel.xaml"/>
 

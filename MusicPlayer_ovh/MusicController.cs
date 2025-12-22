@@ -42,7 +42,10 @@ namespace MusicPlayer_ovh
         // get list of mp3 files in directory
         public List<Song>? listMusicFiles(string DirectoryPath)
         {
-            if(isPathCorrect(DirectoryPath) == false)
+            bool warn = false;
+
+            AppNotificationService.SendNotification("Loading music files...");
+            if (isPathCorrect(DirectoryPath) == false)
             {
                 return null;
             }
@@ -57,7 +60,9 @@ namespace MusicPlayer_ovh
             {
                 Console.WriteLine(ex.Message);
                 return null;
-            }
+            }  
+
+
 
             songs.Clear();
 
@@ -77,37 +82,55 @@ namespace MusicPlayer_ovh
                 picture.Data = imageBytes;
             // read tags from mp3 files
             foreach (FileInfo file in files){
-                Console.WriteLine("Processing file: " + file.FullName);
+                TagLib.File tagFile = TagLib.File.Create(file.FullName);
+                string title = file.Name;
+                string author = "unknown";
+                string length = "0:00";
+                TagLib.IPicture image = picture;
+
                 try
                 {
-                    TagLib.File tagFile = TagLib.File.Create(file.FullName);
-                    string title = file.Name;
-                    string author = "";
-                    string length = "";
-                    
-                    TagLib.IPicture image = picture;
+                    if (tagFile.Tag.Performers[0] != null) { author = tagFile.Tag.Performers[0]; } else { warn = true; }
 
                     if (tagFile.Tag.Title != null)
                     {
-                        char[] delimiters = new char[] { '-', '(' , '.', '['};
-                        string[] t = tagFile.Tag.Title.Split(delimiters);
-                        title = t[0]; 
+                        if (tagFile.Tag.Title.Contains('-')){
+                            title = tagFile.Tag.Title.Split('-')[1].Trim();
+
+                            char[] delimiters = new char[] { '(', '[' };
+                            string[] t = title.Split(delimiters);
+
+                            title = t[0];
+                        }
+                        else
+                        {
+                            char[] delimiters = new char[] { '(', '[' };
+                            string[] t = tagFile.Tag.Title.Split(delimiters);
+
+                            title = t[0];
+                        }
+                        
                     
-                        } else { continue; }
-                    if (tagFile.Tag.Performers[0] != null) { author = tagFile.Tag.Performers[0]; } else { author = "unknown"; }
-                    if (tagFile.Tag.Pictures[0] != null) { image = tagFile.Tag.Pictures[0]; }
+                    }
+                    else { warn = true; }
+
+                    if (tagFile.Tag.Pictures[0] != null) { image = tagFile.Tag.Pictures[0]; } else { warn = true; }
                     var reader = new AudioFileReader(file.FullName);
                     TimeSpan duration = reader.TotalTime;
                     length = duration.ToString(@"m\:ss");
 
-                    songs.Add(new Song(file.FullName, title, author, length, image));
 
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
-                    break;
                 }
+                songs.Add(new Song(file.FullName, title, author, length, image));
+
+            }
+            if (warn == true)
+            {
+                AppNotificationService.SendNotification("Some files are missing tags");
             }
             return songs;
         }

@@ -1,0 +1,78 @@
+﻿<Window x:Class="MusicPlayer_ovh.Mixer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MusicPlayer_ovh"
+        xmlns:fa="http://schemas.fontawesome.com/icons/" xmlns:fa1="http://schemas.fontawesome.io/icons/"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        Title="Mixer" Height="450" Width="800" WindowStartupLocation="CenterOwner" Background="{x:Null}" AllowsTransparency="True"  ResizeMode="NoResize" ShowInTaskbar="False">
+    <Window.Resources>
+        <Style x:Key="MixerSliderEvent" TargetType="{x:Type Slider}" BasedOn="{StaticResource MixerSlider}">
+            <EventSetter Event="PreviewMouseDown" Handler="SliderMouseDown"/>
+            <EventSetter Event="PreviewMouseUp" Handler="SliderMouseUp"/>
+            <EventSetter Event="MouseMove" Handler="SliderMouseMove"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Border BorderBrush="#333333" Background="#FF171717" BorderThickness="1" CornerRadius="8" ClipToBounds="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- navbar -->
+                <Grid Height="28" Background="#33000000" ClipToBounds="False" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="40"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Music Player OVH" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" Foreground="#E0E0E0" Height="20" HorizontalAlignment="Left" Width="205" TextAlignment="Center"/>
+                    <Button Grid.Column="1" Style="{StaticResource CloseButtonStyle}" Click="CloseButton" HorizontalAlignment="Right" Width="40">
+                        <fa1:ImageAwesome Icon="Close" Width="16" Height="16" Foreground="Black"/>
+                    </Button>
+                </Grid>
+
+                <Border Padding="0"  Width="758" Background="#121212" CornerRadius="10" ClipToBounds="True" Height="328" Margin="0" Grid.Row="2">
+                    <Grid Width="758" Height="328" Grid.Row="2">
+                        <Path x:Name="PathLine" Stroke="#1DB954" StrokeThickness="3" Height="318" Width="758" />
+                        <Path x:Name="PathBackground" Stroke="#7F179443" StrokeThickness="3" Height="318" Width="758" />
+                        <Path x:Name="PathBackgroundVertical" Stroke="#7F179443" StrokeThickness="3" Height="318" Width="758" />
+                        <Path x:Name="PathArea" Height="318" Width="758">
+                            <Path.Fill>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Color="#401DB954" Offset="0" />
+                                    <GradientStop Color="#001DB954" Offset="1" />
+                                </LinearGradientBrush>
+                            </Path.Fill>
+                        </Path>
+                        <UniformGrid VerticalAlignment="Stretch" Columns="6" Height="318" Width="758">
+
+
+
+                            <Slider x:Name="slider1"  Tag="0" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318"/>
+                            <Slider x:Name="slider2" Tag="1" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318" VerticalAlignment="Center"/>
+                            <Slider x:Name="slider3" Tag="2" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318"/>
+                            <Slider x:Name="slider4" Tag="3" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318"/>
+                            <Slider x:Name="slider5" Tag="4" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318"/>
+                            <Slider x:Name="slider6" Tag="5" Maximum="12" Minimum="-12" SmallChange="0.1" LargeChange="0.5" HorizontalAlignment="Center" Style="{StaticResource MixerSliderEvent}" Width="11" Height="318"/>
+                        </UniformGrid>
+                    </Grid>
+                </Border>
+                <Label Content="+12dB" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="20,31,0,297" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="-12dB" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="20,297,0,31" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="0dB" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="20,149,0,179" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="60Hz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="89,297,0,31" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="150Hz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="215,294,0,34" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="400Hz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="342,294,0,34" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="1KHz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="468,294,0,34" Grid.Row="2" HorizontalAlignment="Left" Width="44" />
+                <Label Content="2.4KHz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="594,294,0,34" Grid.Row="2" HorizontalAlignment="Left" Width="51" />
+                <Label Content="15KHz" HorizontalContentAlignment="Center" FontWeight="SemiBold" Foreground="#7F179443" Margin="720,294,0,34" Grid.Row="2" HorizontalAlignment="Left" Width="50" />
+            </Grid>
+        </Border>
+        <Label Content="Equalizer" Foreground="#E0E0E0" HorizontalContentAlignment="Center" FontSize="30" HorizontalAlignment="Center" Margin="0,37,0,0" VerticalAlignment="Top" Height="52" Width="162"/>
+    </Grid>
+</Window>
