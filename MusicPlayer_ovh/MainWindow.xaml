@@ -104,12 +104,29 @@
                 </StackPanel>
                 <!-- grid - 0/1 -->
                 <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
-                    <Button x:Name="btPath" Grid.Column="1" Grid.Row="0" Style="{StaticResource PathButtonStyle}" Content="Change folder" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720" Click="PathButtonClick"/>
-                    <Button Grid.Column="1" Grid.Row="0" Width="80" Style="{StaticResource PathButtonStyleOpenExplorer}" Height="40"  >
+                    <Button x:Name="btPath" Grid.Column="1" Grid.Row="0" Style="{StaticResource PathButtonStyle}" Content="Click to copy path" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720" Click="PathButtonClick"/>
+                    <Button Grid.Column="1" Grid.Row="0" Width="80" Style="{StaticResource PathButtonStyleOpenExplorer}" Height="40" Click="OpenExplorerForSongs"  >
                         <fa1:ImageAwesome Icon="FolderOpen" Width="20" Height="20" Foreground="Black"/>
                     </Button>
                 </StackPanel>
-
+                <!-- grid - 0/2 -->
+                <Button x:Name="song_img" Grid.Column="0" Style="{StaticResource ImageRounded}" Grid.Row="1" Height="122" Width="122" Grid.RowSpan="2" Margin="28,545,95,27"/>
+                <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Margin="170,0,0,0" HorizontalAlignment="Left" Width="197" VerticalAlignment="Top" Height="58">
+                    <Canvas Width="197" ClipToBounds="True" x:Name="TitleCanvas">
+                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_title" Text="This is a very long song title that will scroll..." Foreground="#E0E0E0" FontSize="18" HorizontalAlignment="Left" >
+                            <TextBlock.RenderTransform>
+                                <TranslateTransform x:Name="song_title_transform" X="0"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_author" Text="This is a very long song title that will scroll..." Foreground="#FF7D7D7D" FontSize="12" HorizontalAlignment="Center" Canvas.Top="29" VerticalAlignment="Top" >
+                            <TextBlock.RenderTransform>
+                                <TranslateTransform x:Name="song_author_transform" X="0"/>
+                            </TextBlock.RenderTransform>
+                        </TextBlock>
+                    </Canvas>
+                </Grid>
+                <!-- <Label x:Name="song_author" Content="dawbdawdawydaw" Foreground="#E0E0E0" Width="200" Grid.ColumnSpan="2" Grid.Row="2" Margin="167,40,680,51" FontSize="10"/>
+                -->
                 <!-- grid - 1/1 -->
                 <ListView x:Name="Grid_MusicList" AlternationCount="10000" Style="{StaticResource MusicPlayerListStyle}" ItemContainerStyle="{StaticResource MusicListViewItemEvent}" Grid.Column="1" Grid.Row="1" Margin="33,22,33,22" ItemsSource="{Binding songs}" >
                     <ListView.View>
@@ -117,7 +134,7 @@
                             <GridViewColumn Header="" Width="40" >
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock HorizontalAlignment="Center" Text="{Binding (ItemsControl.AlternationIndex), Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
+                                        <TextBlock HorizontalAlignment="Center" Foreground="#FF717171" Text="{Binding (ItemsControl.AlternationIndex), Converter={StaticResource IndexConverter}, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -147,16 +164,11 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="300"/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="song_img" Grid.Column="0" Width="72" Height="72" HorizontalAlignment="Left" Margin="8">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="2" ShadowDepth="2"/>
-                        </Image.Effect>
-                    </Image>
-                    <Label x:Name="song_title" Foreground="#E0E0E0" Grid.Column="0" Margin="96,38,10,37" FontSize="18"/>
+
 
                     <Slider x:Name="song_bar" HorizontalAlignment="Left" Style="{StaticResource MusicPlayerSongSlider}" Width="440" Margin="176,0,0,85" Grid.ColumnSpan="3"/>
-                    <Label x:Name="lb_current_time" Grid.Column="0" Content="Label" HorizontalAlignment="Left" Margin="130,0,0,0" Grid.Row="2" VerticalAlignment="Top"/>
-                    <Label x:Name="lb_total_time" Grid.Column="2" Content="Label" HorizontalAlignment="Left" Margin="130,0,0,0" Grid.Row="2" VerticalAlignment="Top"/>
+                    <Label x:Name="lb_current_time" Grid.Column="0" Content="0:00" HorizontalAlignment="Left" Margin="130,1,0,0" VerticalAlignment="Top"/>
+                    <Label x:Name="lb_total_time" Grid.Column="2" Content="0:00" HorizontalAlignment="Left" Margin="129,1,0,0" VerticalAlignment="Top" Height="26"/>
                     <Button x:Name="bt_play" Grid.Column="1" Command="{Binding TooglePlayCommand}" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Click="Song_PlayPause">
                         <fa1:ImageAwesome x:Name="PlayButtonIcon" Icon="{Binding PlayPauseIcon}" Height="20" Foreground="#FF101010"/>
                     </Button>
@@ -210,7 +222,7 @@
                     </Button>
 
                 </StackPanel>
-                
+
 
             </Grid>
         </StackPanel>

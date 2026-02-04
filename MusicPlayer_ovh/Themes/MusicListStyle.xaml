@@ -25,12 +25,6 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#2A2A2A"/>
                         </Trigger>
-                        <!--
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="#2A2A2A"/>
-                            <Setter Property="Foreground" Value="White"/>
-                        </Trigger>
--->
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -78,22 +72,106 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListView}">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" CornerRadius="8" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
-                        <ScrollViewer Padding="{TemplateBinding Padding}" Style="{DynamicResource NoScrollBarStyle}">
+                        <ScrollViewer Padding="{TemplateBinding Padding}" Style="{DynamicResource DefaultScrollBarStyle}">
                             <DockPanel>
                                 <GridViewHeaderRowPresenter 
                                     DockPanel.Dock="Top" 
                                     Columns="{Binding Path=View.Columns, RelativeSource={RelativeSource TemplatedParent}}" 
                                     ColumnHeaderContainerStyle="{StaticResource MusicListHeader}"/>
-                                
-                            <ItemsPresenter Grid.Row="1"/>
+
+                                <ItemsPresenter Grid.Row="1"/>
                             </DockPanel>
-                            
+
                         </ScrollViewer>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+
+    <Style x:Key="ScrollBarThumb" TargetType="{x:Type Thumb}">
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Thumb}">
+                    <Border x:Name="rectangle" 
+                Background="#444" 
+                CornerRadius="4" 
+                SnapsToDevicePixels="True"
+                Width="8" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="rectangle" Property="Background" Value="#666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ScrollBar" TargetType="{x:Type ScrollBar}">
+        <Setter Property="Width" Value="10"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track" IsDirectionReversed="true">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" Focusable="false"/>
+                            </Track.DecreaseRepeatButton>
+
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource ScrollBarThumb}" />
+                            </Track.Thumb>
+
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" Focusable="false"/>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="DefaultScrollBarStyle" TargetType="{x:Type ScrollViewer}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" 
+                                            Grid.Column="0" Grid.Row="0"
+                                            Content="{TemplateBinding Content}"
+                                            CanContentScroll="{TemplateBinding CanContentScroll}"/>
+
+                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                   Style="{StaticResource ScrollBar}"
+                                   
+                               Grid.Column="1" Grid.Row="0"
+                               Value="{TemplateBinding VerticalOffset}"
+                               Maximum="{TemplateBinding ScrollableHeight}"
+                               ViewportSize="{TemplateBinding ViewportHeight}"
+                               Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+
+
+
+    
+
 
     <Style x:Key="NoScrollBarStyle" TargetType="{x:Type ScrollViewer}">
         <Setter Property="Focusable" Value="True"/>

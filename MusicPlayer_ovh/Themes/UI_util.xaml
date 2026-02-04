@@ -65,4 +65,37 @@
         </Setter>
 
     </Style>
+
+    <Style x:Key="ImageRounded" TargetType="Button">
+        <Setter Property="Foreground" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Border"
+                    BorderBrush="#1E1E1E"
+                    Background="#1E1E1E"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="8">
+                        <Border.Effect>
+                            <DropShadowEffect/>
+                        </Border.Effect>
+
+                        <Grid ClipToBounds="True">
+                            <Image Source="{TemplateBinding Content}" 
+                                   Stretch="UniformToFill" 
+                                   ClipToBounds="True" 
+                                   Width="{TemplateBinding Width}" 
+                                   Height="{TemplateBinding Height}" >
+                                <Image.Clip>
+                                    <RectangleGeometry RadiusX="8" RadiusY="8" Rect="0,0,120,120"/>
+                                </Image.Clip>
+                            </Image>
+
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

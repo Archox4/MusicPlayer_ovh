@@ -1,4 +1,5 @@
 ﻿using FontAwesome.WPF;
+using Microsoft.Win32;
 using MusicPlayer_ovh.Model;
 using NAudio.Wave;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,11 +16,20 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Windows.Media;
+using Windows.Media.Control;
+using Windows.Media.Playback;
+using Windows.Storage.Streams;
+using WindowsMediaController;
+using WinRT;
+using static System.Net.Mime.MediaTypeNames;
 
 
 
@@ -28,6 +39,7 @@ namespace MusicPlayer_ovh
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     /// 
+
     public class IndexConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -44,18 +56,11 @@ namespace MusicPlayer_ovh
 
     public partial class MainWindow : Window
     {
-        public static RoutedCommand PlayCommand = new RoutedCommand();
-        public static RoutedCommand NextCommand = new RoutedCommand();
-        public static RoutedCommand PreviousCommand = new RoutedCommand();
-        public static RoutedCommand VolumeUpCommand = new RoutedCommand();
-        public static RoutedCommand VolumeDownCommand = new RoutedCommand();
-
-
         private ObservableCollection<Song> songs = new ObservableCollection<Song>();
         private ObservableCollection<Song> queue = new ObservableCollection<Song>();
         private ObservableCollection<Song> history = new ObservableCollection<Song>();
 
-        private DispatcherTimer timer;
+        private DispatcherTimer? timer;
         private bool isDragging = false;
 
         public AudioPlayer Player = new AudioPlayer();
@@ -71,7 +76,13 @@ namespace MusicPlayer_ovh
         float volume = 0.5f;
         string path;
 
+
         private Mixer? mixerWindow;
+
+        private SystemMediaTransportControls _smtc;
+
+        private MediaManager mediaManager;
+
 
         public MainWindow()
         {
@@ -98,38 +109,140 @@ namespace MusicPlayer_ovh
             songListRandom = new ();
             volume = Properties.Settings.Default.Volume;
 
-            setCommandBindings();
+            //mediaManager = new MediaManager();
+
+            
+
+            //mediaManager.Start();
 
             UpdateUI();
-
+            checkLabels();
         }
 
-        private void setCommandBindings()
+        protected override void OnSourceInitialized(EventArgs e)
         {
-            CommandBindings.Add(new CommandBinding(PlayCommand, Song_PlayPause));
-            InputBindings.Add(new KeyBinding(PlayCommand, Key.Space, ModifierKeys.None));
-            InputBindings.Add(new KeyBinding(PlayCommand, Key.MediaPlayPause, ModifierKeys.None));
+            base.OnSourceInitialized(e);
 
-            CommandBindings.Add(new CommandBinding(NextCommand, Song_Next));
-            InputBindings.Add(new KeyBinding(NextCommand, Key.MediaNextTrack, ModifierKeys.None));
+            // 1. Initialize the Dubya Library
+            mediaManager = new MediaManager();
+            mediaManager.OnAnyPlaybackStateChanged += MediaManager_OnAnyPlaybackStateChanged;
+            mediaManager.OnAnyMediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
+            mediaManager.Start();
 
-            CommandBindings.Add(new CommandBinding(PreviousCommand, Song_Previous));
-            InputBindings.Add(new KeyBinding(PreviousCommand, Key.MediaPreviousTrack, ModifierKeys.None));
+            // 2. Register YOUR app so Dubya can "see" it
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            _smtc = Windows.Media.SystemMediaTransportControlsInterop.GetForWindow(hwnd);
 
-            CommandBindings.Add(new CommandBinding(VolumeUpCommand, (s, e) =>
-            {
-                setVolume(Math.Min(1.0f, volume + 0.05f));
-                UpdateUI();
-            }));
-            InputBindings.Add(new KeyBinding(VolumeUpCommand, Key.VolumeUp, ModifierKeys.None));
-            CommandBindings.Add(new CommandBinding(VolumeDownCommand, (s, e) =>
-            {
-                setVolume(Math.Max(0.0f, volume - 0.05f));
-                UpdateUI();
-            }));
-            InputBindings.Add(new KeyBinding(VolumeDownCommand, Key.VolumeDown, ModifierKeys.None));
+            // 3. You MUST enable these for Windows (and Dubya) to acknowledge you
+            _smtc.IsPlayEnabled = true;
+            _smtc.IsPauseEnabled = true;
+            _smtc.IsNextEnabled = true;
+            _smtc.IsPreviousEnabled = true;
+            _smtc.ButtonPressed += Smtc_ButtonPressed;
+            _smtc.PlaybackStatus = MediaPlaybackStatus.Paused;
+
+            // 4. Update metadata so it's not "Unknown"
+
         }
 
+        private void MediaManager_OnAnyPlaybackStateChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionPlaybackInfo args)
+        {
+            AppNotificationService.SendNotification("Playback change from app: " + sender.Id);
+            if (sender.Id.Contains("MusicPlayer_ovh") == false)
+            {
+                return;
+            }
+            Dispatcher.Invoke(() =>
+            {
+            var playbackStatus = args.PlaybackStatus;
+
+                if (playbackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                {
+                    //TogglePlay();
+                }
+                else if (playbackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                {
+                    //TogglePlay();
+                }
+            }); 
+        }
+        private void MediaManager_OnAnyMediaPropertyChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionMediaProperties args)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                string title = args.Title;
+                string artist = args.Artist;
+                UpdateUI();
+                checkLabels();
+            });
+        }
+        private void UpdateSmtcMetadata(string title, string artist)
+        {
+            SystemMediaTransportControlsDisplayUpdater updater = _smtc.DisplayUpdater;
+            updater.Type = MediaPlaybackType.Music;
+            updater.MusicProperties.Title = title;
+            updater.MusicProperties.Artist = artist;
+            updater.Update();
+        }
+        private async Task UpdateSmtcMetadataWithThumbnail(string title, string artist, TagLib.IPicture img)
+        {
+            SystemMediaTransportControlsDisplayUpdater updater = _smtc.DisplayUpdater;
+            updater.Type = MediaPlaybackType.Music;
+            updater.MusicProperties.Title = title;
+            updater.MusicProperties.Artist = artist;
+
+            byte[] albumArtBytes = img.Data.Data;
+
+            // 2. Wrap them in a WinRT stream
+            using (InMemoryRandomAccessStream winrtStream = new InMemoryRandomAccessStream())
+            {
+                using (DataWriter writer = new DataWriter(winrtStream.GetOutputStreamAt(0)))
+                {
+                    writer.WriteBytes(albumArtBytes);
+                    await writer.StoreAsync();
+                }
+
+                // 3. Set the Thumbnail for the Windows Overlay
+                updater.Thumbnail = RandomAccessStreamReference.CreateFromStream(winrtStream);
+                updater.Update();
+            }
+
+            updater.Update();
+        }
+        private void Smtc_ButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
+        {
+            // Use Dispatcher to talk to NAudio on the UI thread
+            Dispatcher.Invoke(() => {
+                if (args.Button == SystemMediaTransportControlsButton.Next)
+                {
+                    playNextSong();
+                    _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
+                }
+                else if (args.Button == SystemMediaTransportControlsButton.Previous)
+                {
+                    playPreviousSong();
+                    _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
+                } else if (args.Button == SystemMediaTransportControlsButton.Play)
+                {
+                    // removed toggle play becouse media manager handles it
+                    if (_STATE != "playing")
+                    {
+                        TogglePlay();
+                        _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
+                    }
+                }
+                else if (args.Button == SystemMediaTransportControlsButton.Pause)
+                {
+                    if (_STATE == "playing")
+                    {
+                        TogglePlay();
+                        _smtc.PlaybackStatus = MediaPlaybackStatus.Paused;
+                    }
+                }
+            });
+        }
+
+        // song db click
         protected void HandleDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var song = ((ListViewItem)sender).Content as Song;
@@ -142,12 +255,9 @@ namespace MusicPlayer_ovh
 
                 _STATE = "playing";
                 playingSong = song;
-                TogglePlay();
-                lastPos = getSongPosition(song.path);
-                //PlayFile(song.path);
-                //playingSong = song;
 
-                //lastPos = getSongPosition(song.path);
+                lastPos = getSongPosition(song.path);
+
                 setTimer();
 
                 UpdateUI();
@@ -155,20 +265,7 @@ namespace MusicPlayer_ovh
         }
         private void Song_Previous(object sender, RoutedEventArgs e)
         {
-            if(songHistory == null)
-            {
-                return;
-            }
-            if (songHistory.Count > 0)
-            {
-                historyPos = songHistory.Count - 1;
-                Song currSong = songHistory.ElementAt(historyPos);
-                Player.Play(currSong.path);
-                playingSong = currSong;
-                songHistory.RemoveAt(historyPos);
-                ((AppContext)this.DataContext).UpdateHistory(songHistory);
-                UpdateUI();
-            }
+            playPreviousSong();
         }
         private void Song_Next(object sender, RoutedEventArgs e)
         {
@@ -176,32 +273,40 @@ namespace MusicPlayer_ovh
         }
         private void Song_PlayPause(object sender, RoutedEventArgs e)
         {
+            TogglePlay();
+        }
+
+        public void TogglePlay()
+        {
+
             var _songs = ((AppContext)this.DataContext).songs;
             if (_STATE == "playing")
             {
                 Player.Pause();
                 _STATE = "paused";
                 timer.Stop();
+
             }
             else if (_STATE == "paused" && playingSong != null)
             {
                 Player.Resume();
                 _STATE = "playing";
                 timer.Start();
+
             }
             else if (_STATE == "paused" && playingSong == null && _songs.Count > 0)
             {
                 playNextSong();
                 _STATE = "playing";
+
             }
-            TogglePlay();
+            UpdateUI();
         }
 
         private void playNextSong()
         {
             var _songs = ((AppContext)this.DataContext).songs;
 
-            //_STATE = "paused";
             if (playingSong != null)
             {
                 AddHistory(playingSong);
@@ -280,10 +385,45 @@ namespace MusicPlayer_ovh
                 }
             }
             Player.Volume(volume);
-            _STATE = "playing";
+
+            if(_STATE != "playing")
+            {
+                _STATE = "playing";
+                Player.Resume();
+            }
+
             setTimer();
-            TogglePlay();
             UpdateUI();
+        }
+        private void playPreviousSong()
+        {
+            if (songHistory == null) { return; }
+
+            if (songHistory.Count == 0 && playingSong != null)
+            {
+                timer.Stop();
+                Player.Seek(0);
+                setTimer();
+
+                return;
+            }
+            if (songHistory.Count > 0)
+            {
+                historyPos = songHistory.Count - 1;
+                Song currSong = songHistory.ElementAt(historyPos);
+                Player.Play(currSong.path);
+                playingSong = currSong;
+                songHistory.RemoveAt(historyPos);
+                ((AppContext)this.DataContext).UpdateHistory(songHistory);
+                UpdateUI();
+                if(_STATE != "playing")
+                {
+                    _STATE = "playing";
+                    Player.Resume();
+                }
+            }
+            Player.Volume(volume);
+
         }
         private int getSongPosition(string path)
         {
@@ -340,21 +480,9 @@ namespace MusicPlayer_ovh
         }
         private void CloseButton(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            System.Windows.Application.Current.Shutdown();
         }
 
-        
-        public void TogglePlay()
-        {
-            if (_STATE == "playing")
-            {
-                PlayButtonIcon.Icon = FontAwesomeIcon.Pause;
-            }
-            else
-            {
-                PlayButtonIcon.Icon = FontAwesomeIcon.Play;
-            }
-        }
         public void ToggleMode()
         {
             if (ModeIcon.Icon == FontAwesomeIcon.List)
@@ -370,12 +498,16 @@ namespace MusicPlayer_ovh
         {
             if(playingSong != null)
             {
-                song_title.Content = playingSong?.name;
+                song_title.Text = playingSong?.name;
+                song_title.ToolTip = playingSong?.name;
+
+                song_author.Text = playingSong?.author;
+                song_author.ToolTip = playingSong?.author;
 
                 lb_total_time.Content = Player.TotalSecondsStr;
                 song_bar.Maximum = Player.TotalSeconds;
 
-
+                
                 MemoryStream ms = new MemoryStream(playingSong.image.Data.Data);
                 ms.Seek(0, SeekOrigin.Begin);
                 BitmapImage bitmap = new BitmapImage();
@@ -383,13 +515,27 @@ namespace MusicPlayer_ovh
                 bitmap.StreamSource = ms;
                 bitmap.EndInit();
 
-                song_img.Source = bitmap;
+                //song_img.Source = bitmap;
+                song_img.Content = bitmap;
+
+
+                UpdateSmtcMetadata(playingSong?.name, playingSong?.author);
+                AppNotificationService.SendNotification("Updating SMTC Metadata with Thumbnail");
 
             }
 
             volume_slider.Value = volume;
 
-
+            checkLabels();
+            // icon
+            if (_STATE == "playing")
+            {
+                PlayButtonIcon.Icon = FontAwesomeIcon.Pause;
+            }
+            else
+            {
+                PlayButtonIcon.Icon = FontAwesomeIcon.Play;
+            }
         }
 
         // Fisher-Yates shuffle algorithm / takes list and randomizes
@@ -548,10 +694,16 @@ namespace MusicPlayer_ovh
             {
                 mixerWindow = new Mixer(this.Player);
                 mixerWindow.Owner = this;
+                mixerWindow.Show();
+                mixerWindow.Activate();
+            }
+            else
+            {
+                mixerWindow.Close();
+                mixerWindow = null;
             }
 
-            mixerWindow.Show();
-            mixerWindow.Activate();
+            
         }
 
         
@@ -585,7 +737,56 @@ namespace MusicPlayer_ovh
             timer.Start();
         }
 
+        private void checkLabels()
+        {
+            song_title.UpdateLayout();
+            double textWidth = song_title.ActualWidth;
+            double containerWidth = TitleCanvas.ActualWidth;
 
+            if (textWidth > containerWidth)
+            {
+                DoubleAnimation animation = new DoubleAnimation();
+
+                animation.From = 0;
+
+                animation.To = -(textWidth - containerWidth + 5);
+
+                animation.Duration = TimeSpan.FromSeconds(6);
+                animation.RepeatBehavior = RepeatBehavior.Forever;
+                animation.AutoReverse = true;
+                animation.BeginTime = TimeSpan.FromSeconds(0.5);
+
+                song_title_transform.BeginAnimation(TranslateTransform.XProperty, animation);
+
+            }
+            else if(containerWidth >= textWidth)
+            {
+                song_title_transform.BeginAnimation(TranslateTransform.XProperty, null);
+            }
+
+            song_author.UpdateLayout();
+            textWidth = song_author.ActualWidth;
+            containerWidth = TitleCanvas.ActualWidth;
+            if (textWidth > containerWidth)
+            {
+                DoubleAnimation animation = new DoubleAnimation();
+
+                animation.From = 0;
+
+                animation.To = -(textWidth - containerWidth + 5);
+
+                animation.Duration = TimeSpan.FromSeconds(6);
+                animation.RepeatBehavior = RepeatBehavior.Forever;
+                animation.AutoReverse = true;
+                animation.BeginTime = TimeSpan.FromSeconds(0.5);
+
+                song_author_transform.BeginAnimation(TranslateTransform.XProperty, animation);
+            }
+            else if (containerWidth >= textWidth)
+            {
+                song_author_transform.BeginAnimation(TranslateTransform.XProperty, null);
+            }
+        }
         protected override void OnClosing(CancelEventArgs e)
         {
             Properties.Settings.Default.Volume = volume;
@@ -597,6 +798,7 @@ namespace MusicPlayer_ovh
             base.OnClosing(e);
         }
 
+        // task for path from clipboard
         private async Task Path()
         {
             
@@ -612,17 +814,33 @@ namespace MusicPlayer_ovh
             await Task.CompletedTask;
         }
 
+        // path from clipboard button
         private void PathButtonClick(object sender, RoutedEventArgs e)
-        {;
+        {
                 using var _ = Path();
         }
 
+        // task for explorer folder selection
+        private async Task GetSongsFromExplorer(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                ((AppContext)this.DataContext).LoadSongs(path);
+                this.path = path;
+
+                songs = ((AppContext)this.DataContext).songs;
+                queue = ((AppContext)this.DataContext).queue;
+                history = ((AppContext)this.DataContext).history;
+            }
+            await Task.CompletedTask;
+        }
+
+        // saving last path
         private void loadPath()
         {
             if(Properties.Settings.Default.Path != null && Directory.Exists(Properties.Settings.Default.Path))
             {
                 path = Properties.Settings.Default.Path;
-
             }
             else
             {
@@ -630,6 +848,19 @@ namespace MusicPlayer_ovh
             }
         }
 
+        private void OpenExplorerForSongs(object sender, RoutedEventArgs e)
+        {
+            OpenFolderDialog openFolderDialog = new OpenFolderDialog
+            {
+                Title = " Select Music Folder",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)
+            };
+            if (openFolderDialog.ShowDialog() == true)
+            {
+                string folderPath = openFolderDialog.FolderName;
+                using var _ = GetSongsFromExplorer(folderPath);
+            }
+        }
     }
 
     public enum Modes

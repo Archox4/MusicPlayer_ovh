@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using TagLib.Mpeg;
+using static System.Net.Mime.MediaTypeNames;
+
 
 namespace MusicPlayer_ovh
 {
@@ -19,6 +22,10 @@ namespace MusicPlayer_ovh
         private EqualizerFilter? eq;
         private MixingSampleProvider mixer;
         private readonly float[] eqFrequencies = { 60, 150, 400, 1000, 2400, 15000 };
+
+        
+
+        
 
         public double TotalSeconds => audioFile?.TotalTime.TotalSeconds ?? 0;
         public string TotalSecondsStr
@@ -51,12 +58,26 @@ namespace MusicPlayer_ovh
 
             eq = new EqualizerFilter(mixer, new float[] { 60, 150, 400, 1000, 2400, 15000 });
 
-            for(int i = 0; i < 6; i++)
+            if(Properties.Settings.Default.Gains != null)
             {
+                for (int i = 0; i < 6; i++)
+                {
 
-                float gain = float.Parse(Properties.Settings.Default.Gains[i]);
-                eq.UpdateFilter(i, eqFrequencies[i], gain);
+                    float gain = float.Parse(Properties.Settings.Default.Gains[i]);
+                    eq.UpdateFilter(i, eqFrequencies[i], gain);
+                }
             }
+            else
+            {
+                for (int i = 0; i < 6; i++)
+                {
+
+                    float gain = 0;
+                    eq.UpdateFilter(i, eqFrequencies[i], gain);
+                }
+
+            }
+            
             outputDevice = new WaveOutEvent();
             outputDevice.Init(eq);
             outputDevice.Play();
