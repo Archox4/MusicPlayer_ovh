@@ -113,12 +113,12 @@
                 <Button x:Name="song_img" Grid.Column="0" Style="{StaticResource ImageRounded}" Grid.Row="1" Height="122" Width="122" Grid.RowSpan="2" Margin="28,545,95,27"/>
                 <Grid Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Margin="170,0,0,0" HorizontalAlignment="Left" Width="197" VerticalAlignment="Top" Height="58">
                     <Canvas Width="197" ClipToBounds="True" x:Name="TitleCanvas">
-                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_title" Text="This is a very long song title that will scroll..." Foreground="#E0E0E0" FontSize="18" HorizontalAlignment="Left" >
+                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_title" Text="" Foreground="#E0E0E0" FontSize="18" HorizontalAlignment="Left" >
                             <TextBlock.RenderTransform>
                                 <TranslateTransform x:Name="song_title_transform" X="0"/>
                             </TextBlock.RenderTransform>
                         </TextBlock>
-                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_author" Text="This is a very long song title that will scroll..." Foreground="#FF7D7D7D" FontSize="12" HorizontalAlignment="Center" Canvas.Top="29" VerticalAlignment="Top" >
+                        <TextBlock Canvas.Left="0" TextWrapping="NoWrap" x:Name="song_author" Text="" Foreground="#FF7D7D7D" FontSize="12" HorizontalAlignment="Center" Canvas.Top="29" VerticalAlignment="Top" >
                             <TextBlock.RenderTransform>
                                 <TranslateTransform x:Name="song_author_transform" X="0"/>
                             </TextBlock.RenderTransform>
