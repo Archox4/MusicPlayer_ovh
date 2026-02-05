@@ -88,7 +88,6 @@ namespace MusicPlayer_ovh
         {
             InitializeComponent();
 
-            //this.DataContext = new MusicListContext("C:\\Users\\w\\Music");
             loadPath();
 
             this.DataContext = new AppContext(path);
@@ -109,11 +108,6 @@ namespace MusicPlayer_ovh
             songListRandom = new ();
             volume = Properties.Settings.Default.Volume;
 
-            //mediaManager = new MediaManager();
-
-            
-
-            //mediaManager.Start();
 
             UpdateUI();
             checkLabels();
@@ -123,17 +117,14 @@ namespace MusicPlayer_ovh
         {
             base.OnSourceInitialized(e);
 
-            // 1. Initialize the Dubya Library
             mediaManager = new MediaManager();
             mediaManager.OnAnyPlaybackStateChanged += MediaManager_OnAnyPlaybackStateChanged;
             mediaManager.OnAnyMediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
             mediaManager.Start();
 
-            // 2. Register YOUR app so Dubya can "see" it
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
             _smtc = Windows.Media.SystemMediaTransportControlsInterop.GetForWindow(hwnd);
 
-            // 3. You MUST enable these for Windows (and Dubya) to acknowledge you
             _smtc.IsPlayEnabled = true;
             _smtc.IsPauseEnabled = true;
             _smtc.IsNextEnabled = true;
@@ -141,13 +132,11 @@ namespace MusicPlayer_ovh
             _smtc.ButtonPressed += Smtc_ButtonPressed;
             _smtc.PlaybackStatus = MediaPlaybackStatus.Paused;
 
-            // 4. Update metadata so it's not "Unknown"
 
         }
 
         private void MediaManager_OnAnyPlaybackStateChanged(MediaManager.MediaSession sender, GlobalSystemMediaTransportControlsSessionPlaybackInfo args)
         {
-            AppNotificationService.SendNotification("Playback change from app: " + sender.Id);
             if (sender.Id.Contains("MusicPlayer_ovh") == false)
             {
                 return;
@@ -193,7 +182,6 @@ namespace MusicPlayer_ovh
 
             byte[] albumArtBytes = img.Data.Data;
 
-            // 2. Wrap them in a WinRT stream
             using (InMemoryRandomAccessStream winrtStream = new InMemoryRandomAccessStream())
             {
                 using (DataWriter writer = new DataWriter(winrtStream.GetOutputStreamAt(0)))
@@ -202,7 +190,6 @@ namespace MusicPlayer_ovh
                     await writer.StoreAsync();
                 }
 
-                // 3. Set the Thumbnail for the Windows Overlay
                 updater.Thumbnail = RandomAccessStreamReference.CreateFromStream(winrtStream);
                 updater.Update();
             }
@@ -211,7 +198,6 @@ namespace MusicPlayer_ovh
         }
         private void Smtc_ButtonPressed(SystemMediaTransportControls sender, SystemMediaTransportControlsButtonPressedEventArgs args)
         {
-            // Use Dispatcher to talk to NAudio on the UI thread
             Dispatcher.Invoke(() => {
                 if (args.Button == SystemMediaTransportControlsButton.Next)
                 {
@@ -224,7 +210,6 @@ namespace MusicPlayer_ovh
                     _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
                 } else if (args.Button == SystemMediaTransportControlsButton.Play)
                 {
-                    // removed toggle play becouse media manager handles it
                     if (_STATE != "playing")
                     {
                         TogglePlay();
@@ -259,6 +244,7 @@ namespace MusicPlayer_ovh
                 lastPos = getSongPosition(song.path);
 
                 setTimer();
+                _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
 
                 UpdateUI();
             }
@@ -285,6 +271,7 @@ namespace MusicPlayer_ovh
                 Player.Pause();
                 _STATE = "paused";
                 timer.Stop();
+                _smtc.PlaybackStatus = MediaPlaybackStatus.Paused;
 
             }
             else if (_STATE == "paused" && playingSong != null)
@@ -292,12 +279,15 @@ namespace MusicPlayer_ovh
                 Player.Resume();
                 _STATE = "playing";
                 timer.Start();
+                _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
+
 
             }
             else if (_STATE == "paused" && playingSong == null && _songs.Count > 0)
             {
                 playNextSong();
                 _STATE = "playing";
+                _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
 
             }
             UpdateUI();
@@ -852,7 +842,7 @@ namespace MusicPlayer_ovh
         {
             OpenFolderDialog openFolderDialog = new OpenFolderDialog
             {
-                Title = " Select Music Folder",
+                Title = "Select Music Folder",
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)
             };
             if (openFolderDialog.ShowDialog() == true)

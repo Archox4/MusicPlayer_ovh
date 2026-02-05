@@ -10,7 +10,6 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         AllowsTransparency="True"
-        Icon="/Images/icon.png"
         Title="MainWindow" Height="800" Width="1300" Background="{x:Null}">
 
     <!-- window resources -->
