@@ -510,7 +510,6 @@ namespace MusicPlayer_ovh
 
 
                 UpdateSmtcMetadata(playingSong?.name, playingSong?.author);
-                AppNotificationService.SendNotification("Updating SMTC Metadata with Thumbnail");
 
             }
 
