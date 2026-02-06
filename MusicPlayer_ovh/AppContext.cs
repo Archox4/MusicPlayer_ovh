@@ -58,8 +58,6 @@ namespace MusicPlayer_ovh
                 return;
             }
             LoadSongs(path);
-
-
         }
 
         public void UpdateQueue(List<Song> queue)
@@ -98,8 +96,6 @@ namespace MusicPlayer_ovh
         {
             try
             {
-
-                
                     var list = await MusicController.musicController.LoadMusicFilesAsync(path);
                     if (list == null)
                     {
@@ -117,8 +113,6 @@ namespace MusicPlayer_ovh
 
             }
         }
-
-
 
 
     }

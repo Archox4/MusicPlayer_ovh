@@ -98,9 +98,8 @@ namespace MusicPlayer_ovh
 
 
             _STATE = "paused";
-            _PLAYMODE = Modes.Normal;
+            
             PlayButtonIcon.Icon = FontAwesomeIcon.Play;
-            ModeIcon.Icon = FontAwesomeIcon.List;
             sidePanel.SelectedIndex = 0;
 
             songHistory = new ();
@@ -108,10 +107,13 @@ namespace MusicPlayer_ovh
             songListRandom = new ();
             volume = Properties.Settings.Default.Volume;
 
+            _PLAYMODE = Modes.Normal;
+            ModeIcon.Icon = FontAwesomeIcon.List;
 
             UpdateUI();
             checkLabels();
         }
+
 
         protected override void OnSourceInitialized(EventArgs e)
         {
@@ -475,12 +477,20 @@ namespace MusicPlayer_ovh
 
         public void ToggleMode()
         {
-            if (ModeIcon.Icon == FontAwesomeIcon.List)
+            if(songs == null) {
+                AppNotificationService.SendNotification("No songs loaded");
+                return; }
+            if (_PLAYMODE == Modes.Normal)
             {
+                _PLAYMODE = Modes.Random;
+                var _songs = ((AppContext)this.DataContext).songs;
+                songListRandom = new List<Song>(_songs);
+                ShuffleSongs(songListRandom);
                 ModeIcon.Icon = FontAwesomeIcon.Random;
             }
             else
             {
+                _PLAYMODE = Modes.Normal;
                 ModeIcon.Icon = FontAwesomeIcon.List;
             }
         }
@@ -546,18 +556,18 @@ namespace MusicPlayer_ovh
 
         private void Song_Mode(object sender, RoutedEventArgs e)
         {
-            if(_PLAYMODE == Modes.Normal)
-            {
-                _PLAYMODE = Modes.Random;
-                var _songs = ((AppContext)this.DataContext).songs;
-                songListRandom = new List<Song>(_songs);
-                ShuffleSongs(songListRandom);
+            //if(_PLAYMODE == Modes.Normal)
+            //{
+            //    _PLAYMODE = Modes.Random;
+            //    var _songs = ((AppContext)this.DataContext).songs;
+            //    songListRandom = new List<Song>(_songs);
+            //    ShuffleSongs(songListRandom);
 
-            }
-            else
-            {
-                _PLAYMODE = Modes.Normal;
-            }
+            //}
+            //else
+            //{
+            //    _PLAYMODE = Modes.Normal;
+            //}
             ToggleMode();
         }
 
@@ -781,6 +791,8 @@ namespace MusicPlayer_ovh
             Properties.Settings.Default.Volume = volume;
 
             Properties.Settings.Default.Path = path;
+
+            Properties.Settings.Default.PlayingMode = _PLAYMODE.ToString();
 
             Properties.Settings.Default.Save();
 

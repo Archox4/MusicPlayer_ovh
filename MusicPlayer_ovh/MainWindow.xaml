@@ -138,7 +138,7 @@
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
                             <GridViewColumn Header="Name" Width="290" DisplayMemberBinding="{Binding name}"/>
-                            <GridViewColumn Header="Artist" Width="270" DisplayMemberBinding="{Binding author}"/>
+                            <GridViewColumn Header="Artist" Width="250" DisplayMemberBinding="{Binding author}"/>
                             <GridViewColumn Width="40" DisplayMemberBinding="{Binding length}">
                                 <GridViewColumn.Header>
                                     <fa1:ImageAwesome Icon="ClockOutline" Height="12" Foreground="#E0E0E0"/>
