@@ -381,6 +381,7 @@ namespace MusicPlayer_ovh
             if(_STATE != "playing")
             {
                 _STATE = "playing";
+                _smtc.PlaybackStatus = MediaPlaybackStatus.Playing;
                 Player.Resume();
             }
 
