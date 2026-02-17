@@ -1,15 +1,15 @@
 # MusicPlayer_ovh
 MP3 player based on .NET 8.0 / WPF
 So far only allows to play mp3 files.
-Has play modes:
+# Has play modes:
  - random
  - standard
-You can copy path to folder with music and press big buttton on top to automatically load music from it or open file explorer via button next to it.
-Application saves data:
+# You can copy path to folder with music and press big buttton on top to automatically load music from it or open file explorer via button next to it.
+# Application saves data:
  - last opened path
  - volume
  - equalizer data
-Classic bindings of Play/Pause, Next, Previous are handled by SMTC and Dubya library. Can use keyboard shortcuts for it.
+# Classic bindings of Play/Pause, Next, Previous are handled by SMTC and Dubya library. Can use keyboard shortcuts for it.
 
 ## Used Libraries
 - taglib 2.1.0
