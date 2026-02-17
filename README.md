@@ -6,6 +6,10 @@ So far only allows to play mp3 files.
  - standard
  - you can add to queue
  - or play previous based on history displayed on right panel
+### Equalizer
+App has equalizer made to have better experience with downloaded files. Settings are saved on app exit.
+### Metadata
+Make sure your files have metadata or the displayed song data may not be accurate.
 ### You can copy path to folder with music and press big buttton on top to automatically load music from it or open file explorer via button next to it.
 ### Application saves data:
  - last opened path
