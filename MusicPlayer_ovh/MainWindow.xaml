@@ -81,26 +81,7 @@
 
 
                 <!-- UI-->
-                <!-- notifications -->
-                <StackPanel Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Height="118" Width="226" Margin="0,10,0,0" Grid.RowSpan="2">
-                    <StackPanel.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </StackPanel.RenderTransform>
-                    <ItemsControl ItemsSource="{Binding ActiveNotifications}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="#333" CornerRadius="10" Margin="5" Padding="10">
-                                    <TextBlock Text="{Binding}" Foreground="White" FontWeight="Bold"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                
                 <!-- grid - 0/1 -->
                 <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
                     <Button x:Name="btPath" Grid.Column="1" Grid.Row="0" Style="{StaticResource PathButtonStyle}" Content="Click to copy path" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="720" Click="PathButtonClick"/>
@@ -157,7 +138,7 @@
                     </ListView.View>
                 </ListView>
                 <!-- grid - 2/1 -->
-                <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,10,0">
+                <Grid Grid.Row="2" Grid.Column="1" Margin="0,0,10,0" Cursor="">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="300"/>
                         <ColumnDefinition Width="*"/>
@@ -168,7 +149,7 @@
                     <Slider x:Name="song_bar" HorizontalAlignment="Left" Style="{StaticResource MusicPlayerSongSlider}" Width="440" Margin="176,0,0,85" Grid.ColumnSpan="3"/>
                     <Label x:Name="lb_current_time" Grid.Column="0" Content="0:00" HorizontalAlignment="Left" Margin="130,1,0,0" VerticalAlignment="Top"/>
                     <Label x:Name="lb_total_time" Grid.Column="2" Content="0:00" HorizontalAlignment="Left" Margin="129,1,0,0" VerticalAlignment="Top" Height="26"/>
-                    <Button x:Name="bt_play" Grid.Column="1" Command="{Binding TooglePlayCommand}" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Click="Song_PlayPause">
+                    <Button x:Name="bt_play" Grid.Column="1" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Click="Song_PlayPause">
                         <fa1:ImageAwesome x:Name="PlayButtonIcon" Icon="{Binding PlayPauseIcon}" Height="20" Foreground="#FF101010"/>
                     </Button>
                     <Button Grid.Column="1" Style="{StaticResource ControlsButtonStyle}" Height="40" Width="40" Margin="130,34,20,34" Click="Song_Next">
@@ -178,7 +159,7 @@
                         <fa1:ImageAwesome Icon="AngleLeft" Height="20" Foreground="#FF101010"/>
                     </Button>
 
-                    <Button x:Name="bt_mode" Grid.Column="2" Command="{Binding ToogleModeCommand}" Style="{StaticResource ControlsButtonStyle}" Height="30" Width="30" Margin="34,38,230,43" Click="Song_Mode">
+                    <Button x:Name="bt_mode" Grid.Column="2" Style="{StaticResource ControlsButtonStyle}" Height="30" Width="30" Margin="34,38,230,43" Click="Song_Mode">
                         <fa1:ImageAwesome x:Name="ModeIcon" Icon="{Binding ModeIcon}" Height="15" Foreground="#FF101010"/>
                     </Button>
                 </Grid>
@@ -215,13 +196,35 @@
                     <fa1:ImageAwesome Icon="History" Width="12" Height="12" Foreground="Black"/>
                 </Button>
                 <Slider x:Name="volume_slider" Grid.Column="1" Style="{StaticResource MusicPlayerVolumeSlider}" HorizontalAlignment="Left" Margin="605,0,0,0" Grid.Row="2" VerticalAlignment="Center" Width="197" LargeChange="0.1" LostMouseCapture="Slider_LostMouseCapture" Maximum="1" SmallChange="0.01"/>
-                <StackPanel Grid.Row="1" Grid.Column="0">
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,105,0,0">
                     <Button Style="{StaticResource ControlsButtonStyle}" Width="40" Height="40" Margin="8" HorizontalAlignment="Left" Click="Button_OpenEqualizer">
                         <fa1:ImageAwesome Icon="Sliders" Width="20" Height="20" Foreground="Black"/>
                     </Button>
-
+                    <Button Style="{StaticResource ControlsButtonStyle}" Width="40" Height="40" Margin="8" HorizontalAlignment="Left" Click="Button_OpenDownloader">
+                        <fa1:ImageAwesome Icon="CloudDownload" Width="20" Height="20" Foreground="Black"/>
+                    </Button>
                 </StackPanel>
 
+                <!-- notifications -->
+                <StackPanel Grid.Row="0" Grid.ColumnSpan="2" VerticalAlignment="Top" HorizontalAlignment="Left" Height="118" Width="600" Margin="20,10,0,0" Grid.RowSpan="2">
+                    <StackPanel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </StackPanel.RenderTransform>
+                    <ItemsControl ItemsSource="{Binding ActiveNotifications}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#333" CornerRadius="10" Width="auto" Margin="5" Padding="10">
+                                    <TextBlock Text="{Binding}" Foreground="White" Width="auto" FontWeight="Bold"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
             </Grid>
         </StackPanel>

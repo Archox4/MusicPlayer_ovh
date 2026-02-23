@@ -79,6 +79,8 @@ namespace MusicPlayer_ovh
 
         private Mixer? mixerWindow;
 
+        private DownloaderWindow? downloaderWindow;
+
         private SystemMediaTransportControls _smtc;
 
         private MediaManager mediaManager;
@@ -861,6 +863,21 @@ namespace MusicPlayer_ovh
             {
                 string folderPath = openFolderDialog.FolderName;
                 using var _ = GetSongsFromExplorer(folderPath);
+            }
+        }
+        private void Button_OpenDownloader(object sender, RoutedEventArgs e)
+        {
+            if (downloaderWindow == null)
+            {
+                downloaderWindow = new DownloaderWindow();
+                downloaderWindow.Owner = this;
+                downloaderWindow.Show();
+                downloaderWindow.Activate();
+            }
+            else
+            {
+                downloaderWindow.Close();
+                downloaderWindow = null;
             }
         }
     }

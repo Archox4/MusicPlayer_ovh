@@ -1,0 +1,3 @@
+[console_scripts]
+spotify-scraper = spotify_scraper.__main__:main
+spotifyscraper = spotify_scraper.__main__:main

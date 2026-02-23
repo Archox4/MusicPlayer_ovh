@@ -15,6 +15,15 @@ namespace MusicPlayer_ovh.Model
         public string length { get; set; }
         public TagLib.IPicture image { get; set; }
 
+        public Song()
+        {
+            this.path = "";
+            this.name = "";
+            this.author = "";
+            this.length = "";
+            this.image = null;
+        }
+
         public Song(string path, string name, string author, string length, TagLib.IPicture image)
         {
             this.path = path;

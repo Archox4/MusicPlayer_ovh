@@ -10,19 +10,63 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Extensions\python-3.13.12-embed-amd64\get-pip.py" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\libcrypto-3.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\libffi-8.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\libssl-3.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\LICENSE.txt" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\pyexpat.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python.cat" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python.exe" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python3.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python313.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python313.zip" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\python313._pth" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\pythonw.exe" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\select.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\sqlite3.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\unicodedata.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\vcruntime140.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\vcruntime140_1.dll" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\winsound.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_asyncio.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_bz2.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_ctypes.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_decimal.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_elementtree.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_hashlib.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_lzma.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_multiprocessing.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_overlapped.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_queue.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_socket.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_sqlite3.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_ssl.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_uuid.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_wmi.pyd" />
+    <None Remove="Extensions\python-3.13.12-embed-amd64\_zoneinfo.pyd" />
+    <None Remove="Extensions\yt-dlp.exe" />
     <None Remove="Images\icon.png" />
     <None Remove="Images\missing_icon.png" />
   </ItemGroup>
 
   <ItemGroup>
+	  <Content Include="Extensions\**\*.*">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
     <Content Include="icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Dubya.WindowsMediaController" Version="2.5.6" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="SpotifyExplode" Version="1.1.2" />
+    <PackageReference Include="System.Linq.Async" Version="7.0.0" />
     <PackageReference Include="taglib-sharp-netstandard2.0" Version="2.1.0" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.2.0" />
+    <PackageReference Include="YoutubeExplode" Version="6.5.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,10 +91,6 @@
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mixer\" />
   </ItemGroup>
 
 </Project>
